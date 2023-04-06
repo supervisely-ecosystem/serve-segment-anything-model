@@ -1,1 +1,1 @@
-# Serve Segment Snything Model
+# Serve Segment Anything Model
