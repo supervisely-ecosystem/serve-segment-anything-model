@@ -1,0 +1,23 @@
+[
+    {
+        "Model": "ViT-B SAM",
+        "Number of parameters": "91M",
+        "Size": "375 MB",
+        "mIoU": "69",
+        "weights_link": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth"
+    },
+    {
+        "Model": "ViT-L SAM",
+        "Number of parameters": "308M",
+        "Size": "1.25 GB",
+        "mIoU": "72",
+        "weights_link": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth"
+    },
+   {
+        "Model": "ViT-H SAM",
+        "Number of parameters": "636M",
+        "Size": "2.56 GB",
+        "mIoU": "74",
+        "weights_link": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
+    }
+]

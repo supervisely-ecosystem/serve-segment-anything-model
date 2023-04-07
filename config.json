@@ -1,0 +1,24 @@
+{
+  "name": "Serve Segment Anything Model",
+  "type": "app",
+  "version": "2.0.0",
+  "description": "Deploy model as REST API service",
+  "categories": [
+    "neural network",
+    "images",
+    "object segmentation",
+    "serve",
+    "development"
+  ],
+  "icon_cover": true,
+  "need_gpu": true,
+  "session_tags": [
+    "deployed_nn_sam"
+  ],
+  "community_agent": false,
+  "docker_image": "supervisely/base-py-sdk:6.70.17",
+  "instance_version": "6.7.16",
+  "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
+  "port": 8000,
+  "task_location": "application_sessions"
+}
