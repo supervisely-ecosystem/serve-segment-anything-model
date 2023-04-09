@@ -1,5 +1,5 @@
 import supervisely as sly
-from supervisely.imaging.color import random_rgb, generate_rgb
+from supervisely.imaging.color import generate_rgb
 from supervisely.app.widgets import RadioGroup, Field
 from dotenv import load_dotenv
 import os
@@ -22,7 +22,7 @@ root_source_path = str(Path(__file__).parents[1])
 model_data_path = os.path.join(root_source_path, "models", "model_data.json")
 api = sly.Api()
 
-class SegmentAnythingModel(sly.nn.inference.SemanticSegmentation):
+class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
     def add_content_to_custom_tab(self, gui):
         self.select_task_type = RadioGroup(
             items=[
@@ -87,9 +87,9 @@ class SegmentAnythingModel(sly.nn.inference.SemanticSegmentation):
         # load model on device
         self.sam.to(device=device)
         # define class names
-        self.class_names = ["object_mask"]
+        self.class_names = ["object_0"]
         # list for storing mask colors
-        self.mask_colors = []
+        self.mask_colors = [[255, 0, 0]]
         print(f"✅ Model has been successfully loaded on {device.upper()} device")
 
     def get_info(self):
@@ -111,16 +111,44 @@ class SegmentAnythingModel(sly.nn.inference.SemanticSegmentation):
             self._get_confidence_tag_meta()
         return self._model_meta
         
-    def predict(self, image_path: str, settings: Dict[str, Any]) -> List[sly.nn.PredictionBBox]:
+    def predict(self, image_path: str, settings: Dict[str, Any]) -> List[sly.nn.PredictionMask]:
         # prepare input data
         input_image = sly.image.read(image_path)
         # list for storing preprocessed masks
+        predictions = []
         if settings["mode"] == "raw":
-            mask_generator = SamAutomaticMaskGenerator(self.sam)
-            unprocessed_masks = mask_generator.generate(input_image)
-            for mask in unprocessed_masks:
+            # build mask generator and generate masks
+            mask_generator = SamAutomaticMaskGenerator(
+                model=self.sam,
+                points_per_side=settings["points_per_side"],
+                points_per_batch=settings["points_per_batch"],
+                pred_iou_thresh=settings["pred_iou_thresh"],
+                stability_score_thresh=settings["stability_score_thresh"],
+                stability_score_offset=settings["stability_score_offset"],
+                box_nms_thresh=settings["box_nms_thresh"],
+                crop_n_layers=settings["crop_n_layers"],
+                crop_nms_thresh=settings["crop_nms_thresh"],
+                crop_overlap_ratio=settings["crop_overlap_ratio"],
+                crop_n_points_downscale_factor=settings["crop_n_points_downscale_factor"],
+                point_grids=settings["point_grids"],
+                min_mask_region_area=settings["min_mask_region_area"],
+                output_mode=settings["output_mode"],
+                )
+            masks = mask_generator.generate(input_image)
+            for i, mask in enumerate(masks):
+                if not sly.is_production():
+                    if self._model_meta is None:
+                        self._model_meta = self.model_meta
+                class_name = "object_" + str(i)
+                if not self._model_meta.get_obj_class(class_name):
+                    color = generate_rgb(self.mask_colors)
+                    self.mask_colors.append(color)
+                    self.class_names.append(class_name)
+                    new_class = sly.ObjClass(class_name, sly.Bitmap, color)
+                    self._model_meta = self._model_meta.add_obj_class(new_class)
                 mask = mask["segmentation"]
-        return []
+                predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
+        return predictions
     
 
 m = SegmentAnythingModel(
@@ -137,6 +165,19 @@ else:
     image_path = "./demo_data/image_01.jpg"
     settings = {}
     settings["mode"] = "raw"
+    settings["points_per_side"] = 32
+    settings["points_per_batch"] = 64
+    settings["pred_iou_thresh"] = 0.88
+    settings["stability_score_thresh"] = 0.95
+    settings["stability_score_offset"] = 1.0
+    settings["box_nms_thresh"] = 0.7
+    settings["crop_n_layers"] = 0
+    settings["crop_nms_thresh"] = 0.7
+    settings["crop_overlap_ratio"] = 0.34
+    settings["crop_n_points_downscale_factor"] = 1
+    settings["point_grids"] = None
+    settings["min_mask_region_area"] = 0
+    settings["output_mode"] = "binary_mask"
     results = m.predict(image_path, settings=settings)
     vis_path = "./demo_data/image_01_prediction.jpg"
     m.visualize(results, image_path, vis_path, thickness=7)

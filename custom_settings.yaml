@@ -1,2 +1,38 @@
 # inference mode: raw, bbox or points:
 mode: raw
+# number of points to be sampled along one side of the image
+points_per_side: 32
+# number of points to run simultaneously by the model
+# higher numbers may be faster but use more GPU memory
+points_per_batch: 64
+# a filtering threshold in [0,1], using the model's predicted mask quality
+pred_iou_thresh: 0.88
+# filtering threshold in [0,1], using the stability of the mask under changes
+#  to the cutoff used to binarize the model's mask predictions
+stability_score_thresh: 0.95
+# the amount to shift the cutoff when calculated the stability score
+stability_score_offset: 1.0
+# box IoU cutoff used by non-maximal suppression to filter duplicate masks
+box_nms_thresh: 0.7
+# if >0, mask prediction will be run again on crops of the image
+# sets the number of layers to run, where each layer has
+# 2**i_layer number of image crops
+crops_n_layers: 0
+# box IoU cutoff used by non-maximal suppression to filter duplicate masks
+# between different crops
+crops_nms_thresh: 0.7
+# the degree to which crops overlap, in the first crop layer, crops will
+# overlap by this fraction of the image length, later layers with more crops
+# scale down this overlap
+crop_overlap_ratio: 0.34
+# number of points-per-side sampled in layer n is scaled down by
+# crop_n_points_downscale_factor**n
+crop_n_points_downscale_factor: 1
+# list of np arrays over explicit grids of points used for sampling, normalized to [0,1]
+# the nth grid in the list is used in the nth crop layer (exclusive with points_per_side)
+point_grids: None
+# if >0, postprocessing will be applied to remove disconnected regions
+# and holes in masks with area smaller than min_mask_region_area
+min_mask_region_area: 0
+# form masks are returned in, can be 'binary_mask', 'uncompressed_rle', or 'coco_rle'
+output_mode: binary_mask
