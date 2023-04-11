@@ -87,14 +87,13 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # load model on device
         self.sam.to(device=device)
         # define class names
-        self.class_names = ["object_0"]
+        self.class_names = ["target"]
         # list for storing mask colors
         self.mask_colors = [[255, 0, 0]]
         print(f"✅ Model has been successfully loaded on {device.upper()} device")
 
     def get_info(self):
         info = super().get_info()
-        info["task type"] = "promptable segmentation"
         info["videos_support"] = False
         info["async_video_inference_support"] = False
         return info
@@ -116,6 +115,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         input_image = sly.image.read(image_path)
         # list for storing preprocessed masks
         predictions = []
+        # list for storing image ids
+        image_ids = []
+        # cache for storing masks from previous iterations
+        cache = None
         if settings["mode"] == "raw":
             # build mask generator and generate masks
             mask_generator = SamAutomaticMaskGenerator(
@@ -130,7 +133,6 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 crop_nms_thresh=settings["crop_nms_thresh"],
                 crop_overlap_ratio=settings["crop_overlap_ratio"],
                 crop_n_points_downscale_factor=settings["crop_n_points_downscale_factor"],
-                point_grids=settings["point_grids"],
                 min_mask_region_area=settings["min_mask_region_area"],
                 output_mode=settings["output_mode"],
                 )
@@ -140,14 +142,98 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     if self._model_meta is None:
                         self._model_meta = self.model_meta
                 class_name = "object_" + str(i)
+                # add new class to model meta if necessary
                 if not self._model_meta.get_obj_class(class_name):
                     color = generate_rgb(self.mask_colors)
                     self.mask_colors.append(color)
                     self.class_names.append(class_name)
                     new_class = sly.ObjClass(class_name, sly.Bitmap, color)
                     self._model_meta = self._model_meta.add_obj_class(new_class)
+                # get predicted mask
                 mask = mask["segmentation"]
                 predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
+        elif settings["mode"] == "bbox":
+            # get bbox coordinates
+            bbox_coordinates = settings["bbox_coordinates"]
+            # transform bbox from yxyx to xyxy format
+            bbox_coordinates = [bbox_coordinates[1], bbox_coordinates[0], bbox_coordinates[3], bbox_coordinates[2]]
+            bbox_coordinates = np.array(bbox_coordinates)
+            # get bbox class name and add new class to model meta if necessary
+            class_name = settings["bbox_class_name"] + "_mask"
+            if not self._model_meta.get_obj_class(class_name):
+                self.class_names.append(class_name)
+                new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
+                self._model_meta = self._model_meta.add_obj_class(new_class)
+            # build predictor
+            predictor = SamPredictor(self.sam)
+            # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
+            if settings["input_image_id"] not in image_ids:
+                predictor.set_image(input_image)
+                image_ids.append(settings["input_image_id"])
+            # get predicted mask
+            masks, _, _ = predictor.predict(
+                    point_coords=None,
+                    point_labels=None,
+                    box=bbox_coordinates[None, :],
+                    multimask_output=False,
+                )
+            mask = masks[0]
+            predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
+        elif settings["mode"] == "points":
+            # get point coordinates
+            point_coordinates = settings["point_coordinates"]
+            point_coordinates = np.array(point_coordinates)
+            # get point labels
+            point_labels = settings["point_labels"]
+            point_labels = np.array(point_labels)
+            class_name = self.class_names[0]
+            # build predictor
+            predictor = SamPredictor(self.sam)
+            # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
+            if settings["input_image_id"] not in image_ids:
+                predictor.set_image(input_image)
+                image_ids.append(settings["input_image_id"])
+            # get predicted masks
+            masks, _, _ = predictor.predict(
+                point_coords=point_coordinates,
+                point_labels=point_labels,
+                multimask_output=False,
+            )
+            mask = masks[0]
+            predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
+        elif settings["mode"] == "combined":
+            # get point coordinates
+            point_coordinates = settings["point_coordinates"]
+            point_coordinates = np.array(point_coordinates)
+            # get point labels
+            point_labels = settings["point_labels"]
+            point_labels = np.array(point_labels)
+            # get bbox coordinates
+            bbox_coordinates = settings["bbox_coordinates"]
+            # transform bbox from yxyx to xyxy format
+            bbox_coordinates = [bbox_coordinates[1], bbox_coordinates[0], bbox_coordinates[3], bbox_coordinates[2]]
+            bbox_coordinates = np.array(bbox_coordinates)
+            # get bbox class name and add new class to model meta if necessary
+            class_name = settings["bbox_class_name"] + "_mask"
+            if not self._model_meta.get_obj_class(class_name):
+                self.class_names.append(class_name)
+                new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
+                self._model_meta = self._model_meta.add_obj_class(new_class)
+            # build predictor
+            predictor = SamPredictor(self.sam)
+            # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
+            if settings["input_image_id"] not in image_ids:
+                predictor.set_image(input_image)
+                image_ids.append(settings["input_image_id"])
+            # get predicted masks
+            masks, _, _ = predictor.predict(
+                    point_coords=point_coordinates,
+                    point_labels=point_labels,
+                    box=bbox_coordinates[None, :],
+                    multimask_output=False,
+                    )
+            mask = masks[0]
+            predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
         return predictions
     
 
@@ -175,7 +261,6 @@ else:
     settings["crop_nms_thresh"] = 0.7
     settings["crop_overlap_ratio"] = 0.34
     settings["crop_n_points_downscale_factor"] = 1
-    settings["point_grids"] = None
     settings["min_mask_region_area"] = 0
     settings["output_mode"] = "binary_mask"
     results = m.predict(image_path, settings=settings)
