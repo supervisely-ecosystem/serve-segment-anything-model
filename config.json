@@ -14,7 +14,7 @@
   "icon_cover": true,
   "need_gpu": true,
   "session_tags": [
-    "sly_smart_annotation"
+    "deployed_nn"
   ],
   "community_agent": false,
   "docker_image": "supervisely/base-py-sdk:6.70.17",
