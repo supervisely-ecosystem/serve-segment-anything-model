@@ -15,6 +15,7 @@
   "need_gpu": true,
   "session_tags": [
     "deployed_nn_sam",
+    "deployed_nn",
     "sly_smart_annotation"
   ],
   "community_agent": false,
