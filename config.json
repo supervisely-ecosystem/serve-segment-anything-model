@@ -14,6 +14,8 @@
   "icon_cover": true,
   "need_gpu": true,
   "session_tags": [
+    "deployed_nn",
+    "deployed_nn_object_segmentation",
     "sly_smart_annotation"
   ],
   "community_agent": false,

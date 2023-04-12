@@ -169,7 +169,16 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
         elif settings["mode"] == "bbox":
             # get bbox coordinates
-            bbox_coordinates = settings["bbox_coordinates"]
+            if "rectangle" not in settings:
+                bbox_coordinates = settings["bbox_coordinates"]
+            else:
+                rectangle = sly.Rectangle.from_json(settings["rectangle"])
+                bbox_coordinates = [
+                    rectangle.top,
+                    rectangle.left,
+                    rectangle.bottom,
+                    rectangle.right,
+                ]
             # transform bbox from yxyx to xyxy format
             bbox_coordinates = [
                 bbox_coordinates[1],
