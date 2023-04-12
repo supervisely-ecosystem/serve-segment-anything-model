@@ -15,8 +15,7 @@
   "need_gpu": true,
   "session_tags": [
     "deployed_nn",
-    "deployed_nn_object_segmentation",
-    "sly_smart_annotation"
+    "deployed_nn_object_segmentation"
   ],
   "community_agent": false,
   "docker_image": "supervisely/base-py-sdk:6.70.17",
