@@ -7,13 +7,15 @@
     "neural network",
     "images",
     "object segmentation",
+    "interactive segmentation",
     "serve",
     "development"
   ],
   "icon_cover": true,
   "need_gpu": true,
   "session_tags": [
-    "deployed_nn_sam"
+    "deployed_nn_sam",
+    "sly_smart_annotation"
   ],
   "community_agent": false,
   "docker_image": "supervisely/base-py-sdk:6.70.17",
