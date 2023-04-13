@@ -3,40 +3,50 @@ mode: raw
 # input image id
 input_image_id: None
 # number of points to be sampled along one side of the image
+# (only for raw mode)
 points_per_side: 32
 # number of points to run simultaneously by the model
 # higher numbers may be faster but use more GPU memory
+# (only for raw mode)
 points_per_batch: 64
 # a filtering threshold in [0,1], using the model's predicted mask quality
+# (only for raw mode)
 pred_iou_thresh: 0.88
 # filtering threshold in [0,1], using the stability of the mask under changes
 #  to the cutoff used to binarize the model's mask predictions
+# (only for raw mode)
 stability_score_thresh: 0.95
 # the amount to shift the cutoff when calculated the stability score
+# (only for raw mode)
 stability_score_offset: 1.0
 # box IoU cutoff used by non-maximal suppression to filter duplicate masks
+# (only for raw mode)
 box_nms_thresh: 0.7
 # if >0, mask prediction will be run again on crops of the image
 # sets the number of layers to run, where each layer has
-# 2**i_layer number of image crops
+# 2**i_layer number of image crops (only for raw mode)
 crop_n_layers: 0
 # box IoU cutoff used by non-maximal suppression to filter duplicate masks
-# between different crops
+# between different crops (only for raw mode)
 crop_nms_thresh: 0.7
 # the degree to which crops overlap, in the first crop layer, crops will
 # overlap by this fraction of the image length, later layers with more crops
-# scale down this overlap
+# scale down this overlap (only for raw mode)
 crop_overlap_ratio: 0.34
 # number of points-per-side sampled in layer n is scaled down by
-# crop_n_points_downscale_factor**n
+# crop_n_points_downscale_factor**n (only for raw mode)
 crop_n_points_downscale_factor: 1
 # if >0, postprocessing will be applied to remove disconnected regions
 # and holes in masks with area smaller than min_mask_region_area
+# (only for raw mode)
 min_mask_region_area: 0
 # form masks are returned in, can be 'binary_mask', 'uncompressed_rle', or 'coco_rle'
+# (only for raw mode)
 output_mode: binary_mask
 # name of bounding box (only for bbox and combined mode)
 bbox_class_name: None
+# whether to replace masks from previous inference iterations with new or not
+replace_masks: true
 
 bbox_coordinates: # coordinates of bounding box (only for bbox and combined mode)
 - y_min
@@ -47,6 +57,6 @@ bbox_coordinates: # coordinates of bounding box (only for bbox and combined mode
 point_coordinates: # coordinates of input points (only for points and combined mode)
 - x, y
 
-point_labels: # labels of input points
+point_labels: # labels of input points (only for points and combined mode)
 - label_1
 - label_2
