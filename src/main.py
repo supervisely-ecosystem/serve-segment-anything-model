@@ -305,9 +305,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 return {"message": "400: Bad request.", "success": False}
 
             # collect clicks
-            clicks = [{**click, "is_positive": True} for click in positive_clicks]
-            clicks += [{**click, "is_positive": False} for click in negative_clicks]
-            clicks = functional.transform_clicks_to_crop(crop, clicks)
+            uncropped_clicks = [{**click, "is_positive": True} for click in positive_clicks]
+            uncropped_clicks += [{**click, "is_positive": False} for click in negative_clicks]
+            clicks = functional.transform_clicks_to_crop(crop, uncropped_clicks)
             is_in_bbox = functional.validate_click_bounds(crop, clicks)
             if not is_in_bbox:
                 logger.warn(f"Invalid value: click is out of bbox bounds.")
@@ -330,7 +330,6 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 image_np = run_sync(self._inference_image_cache.get(hash_str))
 
             # crop
-            image_np = functional.crop_image(crop, image_np)
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
             sly_image.write(image_path, image_np)
 
@@ -348,7 +347,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 ]
                 settings["bbox_class_name"] = "target"
                 point_coordinates, point_labels = [], []
-                for click in clicks:
+                for click in uncropped_clicks:
                     point_coordinates.append([click["x"], click["y"]])
                     if click["is_positive"]:
                         point_labels.append(1)
@@ -366,6 +365,15 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
 
             if pred_mask.any():
                 bitmap = sly.Bitmap(pred_mask)
+                # crop bitmap
+                bitmap = bitmap.crop(sly.Rectangle(*settings["bbox_coordinates"]))[0]
+                # adapt bitmap to crop coordinates
+                bitmap_data = bitmap.data
+                bitmap_origin = sly.PointLocation(
+                    bitmap.origin.row - crop[0]["y"],
+                    bitmap.origin.col - crop[0]["x"],
+                )
+                bitmap = sly.Bitmap(data=bitmap_data, origin=bitmap_origin)
                 bitmap_origin, bitmap_data = functional.format_bitmap(bitmap, crop)
                 logger.debug(f"smart_segmentation inference done!")
                 response = {
