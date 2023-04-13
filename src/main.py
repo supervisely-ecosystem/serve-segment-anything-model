@@ -16,6 +16,17 @@ except ImportError:
     from typing_extensions import Literal
 from typing import List, Any, Dict
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+from fastapi import Response, Request, status
+from aiocache import Cache
+import threading
+from supervisely.app.fastapi import run_sync
+import time
+from supervisely.nn.inference.interactive_segmentation import functional
+from supervisely.sly_logger import logger
+from supervisely.imaging import image as sly_image
+from supervisely.io.fs import silent_remove
+from supervisely._utils import rand_str
+from supervisely.app.content import get_data_dir
 
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -88,10 +99,17 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         self.sam = sam_model_registry[model_name](checkpoint=weights_path)
         # load model on device
         self.sam.to(device=device)
+        # build predictor
+        self.predictor = SamPredictor(self.sam)
         # define class names
-        self.class_names = ["target"]
+        self.class_names = ["target_mask"]
         # list for storing mask colors
         self.mask_colors = [[255, 0, 0]]
+        # list for storing image ids
+        self.image_ids = []
+        # set variables for smart tool mode
+        self._inference_image_lock = threading.Lock()
+        self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
         print(f"✅ Model has been successfully loaded on {device.upper()} device")
 
     def get_info(self):
@@ -117,11 +135,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         input_image = sly.image.read(image_path)
         # list for storing preprocessed masks
         predictions = []
-        # list for storing image ids
-        image_ids = []
-        if not sly.is_production():
-            if self._model_meta is None:
-                self._model_meta = self.model_meta
+        if self._model_meta is None:
+            self._model_meta = self.model_meta
         if settings["mode"] == "raw":
             # build mask generator and generate masks
             mask_generator = SamAutomaticMaskGenerator(
@@ -154,7 +169,16 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
         elif settings["mode"] == "bbox":
             # get bbox coordinates
-            bbox_coordinates = settings["bbox_coordinates"]
+            if "rectangle" not in settings:
+                bbox_coordinates = settings["bbox_coordinates"]
+            else:
+                rectangle = sly.Rectangle.from_json(settings["rectangle"])
+                bbox_coordinates = [
+                    rectangle.top,
+                    rectangle.left,
+                    rectangle.bottom,
+                    rectangle.right,
+                ]
             # transform bbox from yxyx to xyxy format
             bbox_coordinates = [
                 bbox_coordinates[1],
@@ -169,14 +193,12 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 self.class_names.append(class_name)
                 new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
                 self._model_meta = self._model_meta.add_obj_class(new_class)
-            # build predictor
-            predictor = SamPredictor(self.sam)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] not in image_ids:
-                predictor.set_image(input_image)
-                image_ids.append(settings["input_image_id"])
+            if settings["input_image_id"] not in self.image_ids:
+                self.predictor.set_image(input_image)
+                self.image_ids.append(settings["input_image_id"])
             # get predicted mask
-            masks, _, _ = predictor.predict(
+            masks, _, _ = self.predictor.predict(
                 point_coords=None,
                 point_labels=None,
                 box=bbox_coordinates[None, :],
@@ -192,14 +214,12 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             point_labels = settings["point_labels"]
             point_labels = np.array(point_labels)
             class_name = self.class_names[0]
-            # build predictor
-            predictor = SamPredictor(self.sam)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] not in image_ids:
-                predictor.set_image(input_image)
-                image_ids.append(settings["input_image_id"])
+            if settings["input_image_id"] not in self.image_ids:
+                self.predictor.set_image(input_image)
+                self.image_ids.append(settings["input_image_id"])
             # get predicted masks
-            masks, _, _ = predictor.predict(
+            masks, _, _ = self.predictor.predict(
                 point_coords=point_coordinates,
                 point_labels=point_labels,
                 multimask_output=False,
@@ -229,14 +249,12 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 self.class_names.append(class_name)
                 new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
                 self._model_meta = self._model_meta.add_obj_class(new_class)
-            # build predictor
-            predictor = SamPredictor(self.sam)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] not in image_ids:
-                predictor.set_image(input_image)
-                image_ids.append(settings["input_image_id"])
+            if settings["input_image_id"] not in self.image_ids:
+                self.predictor.set_image(input_image)
+                self.image_ids.append(settings["input_image_id"])
             # get predicted masks
-            masks, _, _ = predictor.predict(
+            masks, _, _ = self.predictor.predict(
                 point_coords=point_coordinates,
                 point_labels=point_labels,
                 box=bbox_coordinates[None, :],
@@ -245,6 +263,126 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             mask = masks[0]
             predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
         return predictions
+
+    def serve(self):
+        super().serve()
+        server = self._app.get_server()
+
+        @server.post("/smart_segmentation")
+        def smart_segmentation(response: Response, request: Request):
+            # 1. parse request
+            # 2. download image
+            # 3. make crop
+            # 4. predict
+
+            logger.debug(
+                f"smart_segmentation inference: context=",
+                extra={**request.state.context, "api_token": "***"},
+            )
+
+            try:
+                state = request.state.state
+                settings = self._get_inference_settings(state)
+                smtool_state = request.state.context
+                api = request.state.api
+                crop = smtool_state["crop"]
+                positive_clicks, negative_clicks = (
+                    smtool_state["positive"],
+                    smtool_state["negative"],
+                )
+                if len(positive_clicks) + len(negative_clicks) == 0:
+                    logger.warn("No clicks received.")
+                    response = {
+                        "origin": None,
+                        "bitmap": None,
+                        "success": True,
+                        "error": None,
+                    }
+                    return response
+            except Exception as exc:
+                logger.warn("Error parsing request:" + str(exc), exc_info=True)
+                response.status_code = status.HTTP_400_BAD_REQUEST
+                return {"message": "400: Bad request.", "success": False}
+
+            # collect clicks
+            clicks = [{**click, "is_positive": True} for click in positive_clicks]
+            clicks += [{**click, "is_positive": False} for click in negative_clicks]
+            clicks = functional.transform_clicks_to_crop(crop, clicks)
+            is_in_bbox = functional.validate_click_bounds(crop, clicks)
+            if not is_in_bbox:
+                logger.warn(f"Invalid value: click is out of bbox bounds.")
+                return {
+                    "origin": None,
+                    "bitmap": None,
+                    "success": True,
+                    "error": None,
+                }
+
+            # download image if needed (using cache)
+            app_dir = get_data_dir()
+            hash_str = functional.get_hash_from_context(smtool_state)
+            if run_sync(self._inference_image_cache.get(hash_str)) is None:
+                logger.debug(f"downloading image: {hash_str}")
+                image_np = functional.download_image_from_context(smtool_state, api, app_dir)
+                run_sync(self._inference_image_cache.set(hash_str, image_np))
+            else:
+                logger.debug(f"image found in cache: {hash_str}")
+                image_np = run_sync(self._inference_image_cache.get(hash_str))
+
+            # crop
+            image_np = functional.crop_image(crop, image_np)
+            image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
+            sly_image.write(image_path, image_np)
+
+            self._inference_image_lock.acquire()
+            try:
+                # predict
+                logger.debug(f"predict: {smtool_state['request_uid']}")
+                settings["mode"] = "combined"
+                settings["input_image_id"] = smtool_state["image_id"]
+                settings["bbox_coordinates"] = [
+                    crop[0]["y"],
+                    crop[0]["x"],
+                    crop[1]["y"],
+                    crop[1]["x"],
+                ]
+                settings["bbox_class_name"] = "target"
+                point_coordinates, point_labels = [], []
+                for click in clicks:
+                    point_coordinates.append([click["x"], click["y"]])
+                    if click["is_positive"]:
+                        point_labels.append(1)
+                    else:
+                        point_labels.append(0)
+                settings["point_coordinates"], settings["point_labels"] = (
+                    point_coordinates,
+                    point_labels,
+                )
+                pred_mask = self.predict(image_path, settings)[0].mask
+            finally:
+                logger.debug(f"predict done: {smtool_state['request_uid']}")
+                self._inference_image_lock.release()
+                silent_remove(image_path)
+
+            if pred_mask.any():
+                bitmap = sly.Bitmap(pred_mask)
+                bitmap_origin, bitmap_data = functional.format_bitmap(bitmap, crop)
+                logger.debug(f"smart_segmentation inference done!")
+                response = {
+                    "origin": bitmap_origin,
+                    "bitmap": bitmap_data,
+                    "success": True,
+                    "error": None,
+                }
+            else:
+                logger.debug(f"Predicted mask is empty.")
+                response = {
+                    "origin": None,
+                    "bitmap": None,
+                    "success": True,
+                    "error": None,
+                }
+            return response
 
 
 m = SegmentAnythingModel(
