@@ -56,10 +56,10 @@ and negative (red) clicks, respectively.
 # How to Run
 
 1. Start the application from Ecosystem.
-<img src="xxx" width="900"/>
+<img src="https://user-images.githubusercontent.com/115161827/232101357-75f58154-266f-447c-b4a0-4cb620e510e4.gif" width="900"/>
 
 2. Select the pretrained model and deploy it on your device by clicking `Serve` button.
-<img src="xxx" />
+<img src="https://user-images.githubusercontent.com/115161827/232102026-99725e52-d844-44fd-8449-061f84116cf6.png" />
 
 3. You'll see `Model has been successfully loaded` message indicating that the application has been successfully started and you can work with it from now on.
 
