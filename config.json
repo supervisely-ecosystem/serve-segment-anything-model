@@ -6,12 +6,12 @@
   "categories": [
     "neural network",
     "images",
-    "object segmentation",
     "interactive segmentation",
-    "serve",
-    "development"
+    "serve"
   ],
+  "icon": "https://user-images.githubusercontent.com/115161827/232042944-f4a36f1f-5bc5-4668-8205-89632da55283.png",
   "icon_cover": true,
+  "poster": "https://user-images.githubusercontent.com/115161827/232042280-efa9361c-c122-4ccd-80d6-575a63b4fcf7.png",
   "need_gpu": true,
   "session_tags": [
     "sly_smart_annotation",
