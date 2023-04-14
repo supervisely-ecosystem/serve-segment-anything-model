@@ -133,6 +133,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         return self._model_meta
 
     def set_image_data(self, input_image, settings):
+        if len(self.cache.keys()) > 500:
+            self.cache = {}
         if settings["input_image_id"] != self.previous_image_id:
             if settings["input_image_id"] not in self.cache:
                 self.predictor.set_image(input_image)
