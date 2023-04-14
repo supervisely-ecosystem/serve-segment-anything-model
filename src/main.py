@@ -107,6 +107,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         self.mask_colors = [[255, 0, 0]]
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
+        # dict for storing model variables to avoid unnecessary calculations
+        self.cache = {}
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
@@ -129,6 +131,22 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             )
             self._get_confidence_tag_meta()
         return self._model_meta
+
+    def set_image_data(self, input_image, settings):
+        if settings["input_image_id"] != self.previous_image_id:
+            if settings["input_image_id"] not in self.cache:
+                self.predictor.set_image(input_image)
+                self.cache[settings["input_image_id"]] = {
+                    "features": self.predictor.features,
+                    "input_size": self.predictor.input_size,
+                    "original_size": self.predictor.original_size,
+                }
+            else:
+                self.predictor.features = self.cache[settings["input_image_id"]]["features"]
+                self.predictor.input_size = self.cache[settings["input_image_id"]]["input_size"]
+                self.predictor.original_size = self.cache[settings["input_image_id"]][
+                    "original_size"
+                ]
 
     def predict(self, image_path: str, settings: Dict[str, Any]) -> List[sly.nn.PredictionMask]:
         # prepare input data
@@ -194,8 +212,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
                 self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] != self.previous_image_id:
-                self.predictor.set_image(input_image)
+            self.set_image_data(input_image, settings)
             self.previous_image_id = settings["input_image_id"]
             # get predicted mask
             masks, _, _ = self.predictor.predict(
@@ -215,8 +232,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             point_labels = np.array(point_labels)
             class_name = self.class_names[0]
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] != self.previous_image_id:
-                self.predictor.set_image(input_image)
+            self.set_image_data(input_image, settings)
             self.previous_image_id = settings["input_image_id"]
             # get predicted masks
             masks, _, _ = self.predictor.predict(
@@ -250,8 +266,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
                 self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] != self.previous_image_id:
-                self.predictor.set_image(input_image)
+            self.set_image_data(input_image, settings)
             self.previous_image_id = settings["input_image_id"]
             # get predicted masks
             masks, _, _ = self.predictor.predict(
