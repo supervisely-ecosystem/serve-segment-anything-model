@@ -105,8 +105,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         self.class_names = ["target_mask"]
         # list for storing mask colors
         self.mask_colors = [[255, 0, 0]]
-        # list for storing image ids
-        self.image_ids = []
+        # variable for storing image ids from previous inference iterations
+        self.previous_image_id = None
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
@@ -194,9 +194,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 new_class = sly.ObjClass(class_name, sly.Bitmap, [255, 0, 0])
                 self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
-            if settings["input_image_id"] not in self.image_ids:
+            if settings["input_image_id"] != self.previous_image_id:
                 self.predictor.set_image(input_image)
-                self.image_ids.append(settings["input_image_id"])
+            self.previous_image_id = settings["input_image_id"]
             # get predicted mask
             masks, _, _ = self.predictor.predict(
                 point_coords=None,
