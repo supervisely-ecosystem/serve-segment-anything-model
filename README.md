@@ -36,7 +36,7 @@ Application key points:
 </p>
 
 <p align="center">
-<img src="xxx" width="950"/>
+<img src="https://user-images.githubusercontent.com/119248312/229991240-9afc6fc9-fc94-45b0-bf96-40d1dda82ba0.jpg" width="950"/>
 </p>
 
 Besides segmenting new objects, proposed method allows to correct external masks, e.g. produced by other
@@ -56,7 +56,8 @@ and negative (red) clicks, respectively.
 # How to Run
 
 1. Start the application from Ecosystem.
-<img src="https://user-images.githubusercontent.com/115161827/232101357-75f58154-266f-447c-b4a0-4cb620e510e4.gif" width="900"/>
+<p align="center">
+<img src="https://user-images.githubusercontent.com/115161827/232101357-75f58154-266f-447c-b4a0-4cb620e510e4.gif" width="700"/> </p>
 
 2. Select the pretrained model and deploy it on your device by clicking `Serve` button.
 <img src="https://user-images.githubusercontent.com/115161827/232102026-99725e52-d844-44fd-8449-061f84116cf6.png" />
@@ -67,7 +68,7 @@ and negative (red) clicks, respectively.
   <img src="https://user-images.githubusercontent.com/115161827/229956389-bb8780db-9bd8-442b-aa28-cfc552316bc5.png" height="140px" />
 </div>
   
-## Controls
+# Controls
 
 | Key                                                           | Description                               |
 | ------------------------------------------------------------- | ------------------------------------------|
@@ -92,7 +93,7 @@ and negative (red) clicks, respectively.
 <img src="https://user-images.githubusercontent.com/119248312/229995028-d33b0423-6510-4747-a929-e0e860ccabff.jpg" width="90%"/>
 </div>
 
-## Acknowledgment
+# Acknowledgment
 
-This app is based on the great work `xxx` [github](xxx). ![GitHub Org's stars](https://img.shields.io/github/stars/xxx?style=social)
+This app is based on the great work `Segment Anything`: [github](https://github.com/facebookresearch/segment-anything). ![GitHub Org's stars](https://img.shields.io/github/stars/facebookresearch/segment-anything?style=social)
 
