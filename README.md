@@ -26,7 +26,7 @@ Application key points:
 - Deploy on GPU(faster) or CPU(slower)
 - Accurate predictions in most cases
 - Correct prediction interactively with `red` and `green` clicks
-- Select one of <a href=#Pretrained-models> 3 pretrained models </a>
+- Select one of 3 pretrained models
 - Models are class agnostic, you can segment any object from any domain
 
 !OVERVIEW PLACEHOLDER!
