@@ -72,9 +72,9 @@ and negative (red) clicks, respectively.
 
 <details>
   <summary>Single-click segmentation of a complicated object using Smart Tool</summary>
-  
-https://user-images.githubusercontent.com/115161827/232538683-61113584-80d3-467a-a4bc-1e89d542c0d5.mp4
-  
+ 
+https://user-images.githubusercontent.com/91027877/232551639-5e0af23c-c47b-40f8-994e-11af7654af88.mp4
+
 </details>
 
 <details>
