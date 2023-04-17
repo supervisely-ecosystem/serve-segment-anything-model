@@ -5,7 +5,6 @@
   
 <p align="center">
   <a href="#Overview">Overview</a> •
-  <a href="#Pretrained-models">Pretrained models</a> •
   <a href="#How-to-Run">How to Run</a> •
   <a href="#Controls">Controls</a> •
   <a href="#Acknowledgment">Acknowledgment</a> 
