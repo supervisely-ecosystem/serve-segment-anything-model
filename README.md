@@ -29,11 +29,7 @@ Application key points:
 - Select one of 3 pretrained models
 - Models are class agnostic, you can segment any object from any domain
 
-!OVERVIEW PLACEHOLDER!
-
-<p align="center">
-<img src="xxx" width="900"/>
-</p>
+The Segment Anything Model (SAM) can generate masks for objects on images using different types of prompts such as points and bounding boxes, and it can also be applied to raw image to generate masks for all objects.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/119248312/229991240-9afc6fc9-fc94-45b0-bf96-40d1dda82ba0.jpg" width="950"/>
@@ -43,17 +39,9 @@ Besides segmenting new objects, proposed method allows to correct external masks
 instance or semantic segmentation models. A user can fix false negative and false positive regions with positive (green)
 and negative (red) clicks, respectively.
 
-# Pretrained models
-
-!PLACEHOLDER!
-
-## Prediction preview:
-
-<div align="center" markdown>
- <img src="xxx" width="40%"/>
-</div>
-
 # How to Run
+
+**Pretrained models**
 
 1. Start the application from Ecosystem.
 <p align="center">
@@ -67,6 +55,13 @@ and negative (red) clicks, respectively.
 <div align="center" markdown>
   <img src="https://user-images.githubusercontent.com/115161827/229956389-bb8780db-9bd8-442b-aa28-cfc552316bc5.png" height="140px" />
 </div>
+
+
+**Custom models**
+
+Copy model file path from Team Files and select model architecture:
+
+https://user-images.githubusercontent.com/91027877/232559973-dca553e1-d86f-4808-aaab-cf68bafc0e6f.mp4
 
 # Model application examples
 
@@ -92,7 +87,7 @@ https://user-images.githubusercontent.com/115161827/232538575-1863ff7a-1f7e-418a
 </details>
 
 <details>
-  <summary>Applying the model to the BBoxes</summary>
+  <summary>Applying the model to object in bounding box</summary>
   
 https://user-images.githubusercontent.com/115161827/232538528-477a18ad-e701-4d0b-8ce7-6abff3246197.mp4
   
@@ -106,7 +101,7 @@ https://user-images.githubusercontent.com/115161827/232538553-0a7ff542-ee5e-419d
 </details>
   
 <details>
-  <summary>Applying the model in the "combined" mode</summary>
+  <summary>Applying the model in the combined mode (using both points and bounding box)</summary>
   
 https://user-images.githubusercontent.com/115161827/232538470-db1ed291-aa0a-48df-ae83-5e82193aca51.mp4
   
