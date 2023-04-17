@@ -112,7 +112,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=100, ttl=60)
+        self.cache = TTLCache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
