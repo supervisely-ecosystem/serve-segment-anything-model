@@ -32,7 +32,7 @@ from cachetools import TTLCache
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 root_source_path = str(Path(__file__).parents[1])
-weights_location_path = os.path.join(root_source_path, "weights")
+weights_location_path = "/weights"
 model_data_path = os.path.join(root_source_path, "models", "model_data.json")
 api = sly.Api()
 
@@ -112,7 +112,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=500, ttl=60)
+        self.cache = TTLCache(maxsize=100, ttl=60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
