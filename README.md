@@ -67,7 +67,51 @@ and negative (red) clicks, respectively.
 <div align="center" markdown>
   <img src="https://user-images.githubusercontent.com/115161827/229956389-bb8780db-9bd8-442b-aa28-cfc552316bc5.png" height="140px" />
 </div>
+
+# Model application examples
+
+<details>
+  <summary>Single-click segmentation of a complicated object using Smart Tool</summary>
   
+https://user-images.githubusercontent.com/115161827/232538683-61113584-80d3-467a-a4bc-1e89d542c0d5.mp4
+  
+</details>
+
+<details>
+  <summary>Mask correction with Positive and Negative points in Smart Tool</summary>
+  
+https://user-images.githubusercontent.com/115161827/232538639-02c688c5-58bd-4500-b9c9-04aa5bf720b0.mp4
+  
+</details>
+
+<details>
+  <summary>Applying the model in raw mode via NN image labeling app</summary>
+  
+https://user-images.githubusercontent.com/115161827/232538575-1863ff7a-1f7e-418a-8157-7cdd4364abdc.mp4
+  
+</details>
+
+<details>
+  <summary>Applying the model to the BBoxes</summary>
+  
+https://user-images.githubusercontent.com/115161827/232538528-477a18ad-e701-4d0b-8ce7-6abff3246197.mp4
+  
+</details>
+
+<details>
+  <summary>Applying the model to the points</summary>
+  
+https://user-images.githubusercontent.com/115161827/232538553-0a7ff542-ee5e-419d-ac1c-b347ae9468e6.mp4
+  
+</details>
+  
+<details>
+  <summary>Applying the model in the "combined" mode</summary>
+  
+https://user-images.githubusercontent.com/115161827/232538470-db1ed291-aa0a-48df-ae83-5e82193aca51.mp4
+  
+ </details>
+ 
 # Controls
 
 | Key                                                           | Description                               |
