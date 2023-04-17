@@ -6,6 +6,7 @@
 <p align="center">
   <a href="#Overview">Overview</a> •
   <a href="#How-to-Run">How to Run</a> •
+  <a href="#Model-application-examples">Model application examples</a> •
   <a href="#Controls">Controls</a> •
   <a href="#Acknowledgment">Acknowledgment</a> 
 </p>
@@ -64,47 +65,29 @@ https://user-images.githubusercontent.com/91027877/232559973-dca553e1-d86f-4808-
 
 # Model application examples
 
-<details>
-  <summary>Single-click segmentation of a complicated object using Smart Tool</summary>
+Single-click segmentation of a complicated object using Smart Tool:
 
 https://user-images.githubusercontent.com/91027877/232552579-8f616853-531b-4531-90a1-773e265f9792.mp4
 
-</details>
-
-<details>
-  <summary>Mask correction with Positive and Negative points in Smart Tool</summary>
+Mask correction with Positive and Negative points in Smart Tool:
   
 https://user-images.githubusercontent.com/115161827/232538639-02c688c5-58bd-4500-b9c9-04aa5bf720b0.mp4
   
-</details>
-
-<details>
-  <summary>Applying the model in raw mode via NN image labeling app</summary>
+Applying model in raw mode via NN image labeling app:
   
 https://user-images.githubusercontent.com/115161827/232538575-1863ff7a-1f7e-418a-8157-7cdd4364abdc.mp4
-  
-</details>
 
-<details>
-  <summary>Applying the model to object in bounding box</summary>
+Applying model to object in bounding box:
   
 https://user-images.githubusercontent.com/115161827/232538528-477a18ad-e701-4d0b-8ce7-6abff3246197.mp4
   
-</details>
-
-<details>
-  <summary>Applying the model to the points</summary>
+Applying model to the points:
   
 https://user-images.githubusercontent.com/115161827/232538553-0a7ff542-ee5e-419d-ac1c-b347ae9468e6.mp4
   
-</details>
-  
-<details>
-  <summary>Applying the model in the combined mode (using both points and bounding box)</summary>
+Applying the model in the combined mode (using both points and bounding box):
   
 https://user-images.githubusercontent.com/115161827/232538470-db1ed291-aa0a-48df-ae83-5e82193aca51.mp4
-  
- </details>
  
 # Controls
 
