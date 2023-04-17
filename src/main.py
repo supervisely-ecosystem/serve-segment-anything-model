@@ -27,10 +27,12 @@ from supervisely.imaging import image as sly_image
 from supervisely.io.fs import silent_remove
 from supervisely._utils import rand_str
 from supervisely.app.content import get_data_dir
+from cachetools import TTLCache
 
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 root_source_path = str(Path(__file__).parents[1])
+weights_location_path = os.path.join(root_source_path, "weights")
 model_data_path = os.path.join(root_source_path, "models", "model_data.json")
 api = sly.Api()
 
@@ -67,7 +69,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             selected_model = self.gui.get_checkpoint_info()["Model"]
             weights_link = models_data[selected_model]["weights_link"]
             weights_file_name = selected_model.replace(" ", "_") + ".pth"
-            weights_dst_path = os.path.join(model_dir, weights_file_name)
+            weights_dst_path = os.path.join(weights_location_path, weights_file_name)
+            # for debug
+            # weights_dst_path = os.path.join(model_dir, weights_file_name)
             if not sly.fs.file_exists(weights_dst_path):
                 self.download(src_path=weights_link, dst_path=weights_dst_path)
         elif model_source == "Custom models":
@@ -108,7 +112,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = {}
+        self.cache = TTLCache(maxsize=500, ttl=60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
@@ -133,8 +137,6 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         return self._model_meta
 
     def set_image_data(self, input_image, settings):
-        if len(self.cache.keys()) > 500:
-            self.cache = {}
         if settings["input_image_id"] != self.previous_image_id:
             if settings["input_image_id"] not in self.cache:
                 self.predictor.set_image(input_image)
