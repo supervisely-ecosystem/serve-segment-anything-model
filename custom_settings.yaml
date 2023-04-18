@@ -45,6 +45,8 @@ min_mask_region_area: 0
 output_mode: binary_mask
 # name of bounding box (only for bbox and combined mode)
 bbox_class_name: None
+# name of mask class (only for points mode)
+points_class_name: None
 # whether to replace masks from previous inference iterations with new or not
 replace_masks: true
 
