@@ -80,10 +80,10 @@ https://user-images.githubusercontent.com/115161827/232538575-1863ff7a-1f7e-418a
 Applying model to object in bounding box:
   
 https://user-images.githubusercontent.com/115161827/232538528-477a18ad-e701-4d0b-8ce7-6abff3246197.mp4
-  
+ 
 Applying model to the points:
-  
-https://user-images.githubusercontent.com/115161827/232538553-0a7ff542-ee5e-419d-ac1c-b347ae9468e6.mp4
+
+https://user-images.githubusercontent.com/91027877/233379739-8fbfe2d0-7232-40ba-8de1-dc209069edd5.mp4
   
 Applying model in the combined mode (using both points and bounding box):
   
