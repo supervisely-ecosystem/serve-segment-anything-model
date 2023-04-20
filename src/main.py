@@ -234,7 +234,18 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # get point labels
             point_labels = settings["point_labels"]
             point_labels = np.array(point_labels)
-            class_name = self.class_names[0]
+            # set class name
+            if settings["points_class_name"]:
+                class_name = settings["points_class_name"]
+            else:
+                class_name = self.class_names[0]
+            # add new class to model meta if necessary
+            if not self._model_meta.get_obj_class(class_name):
+                color = generate_rgb(self.mask_colors)
+                self.mask_colors.append(color)
+                self.class_names.append(class_name)
+                new_class = sly.ObjClass(class_name, sly.Bitmap, color)
+                self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
             self.set_image_data(input_image, settings)
             self.previous_image_id = settings["input_image_id"]
