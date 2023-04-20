@@ -93,6 +93,10 @@ If you want predicted masks to be automatically overdrawn be replacing old masks
 
 https://user-images.githubusercontent.com/91027877/233377950-c480eb09-4727-41ca-ab8f-24214ed9d945.mp4
 
+You can also use this app for segmenting objects on videos using [video labeling tool](https://ecosystem.supervise.ly/apps/video-labeling-tool) (here is full [guide](https://www.youtube.com/watch?v=eaAh856QKYg&t=19s) on working with smart tool in video labeling tool):
+
+https://user-images.githubusercontent.com/91027877/233416370-6e37d654-96eb-42fe-91f0-4ea7a6e6503a.mp4
+
 # Controls
 
 | Key                                                           | Description                               |
