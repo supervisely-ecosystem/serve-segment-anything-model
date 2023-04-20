@@ -368,7 +368,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 # predict
                 logger.debug(f"predict: {smtool_state['request_uid']}")
                 settings["mode"] = "combined"
-                settings["input_image_id"] = smtool_state["image_id"]
+                if "image_id" in smtool_state:
+                    settings["input_image_id"] = smtool_state["image_id"]
+                elif "video" in smtool_state:
+                    settings["input_image_id"] = hash_str
                 settings["bbox_coordinates"] = [
                     crop[0]["y"],
                     crop[0]["x"],
