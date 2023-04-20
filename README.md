@@ -85,10 +85,14 @@ Applying model to the points:
   
 https://user-images.githubusercontent.com/115161827/232538553-0a7ff542-ee5e-419d-ac1c-b347ae9468e6.mp4
   
-Applying the model in the combined mode (using both points and bounding box):
+Applying model in the combined mode (using both points and bounding box):
   
 https://user-images.githubusercontent.com/115161827/232538470-db1ed291-aa0a-48df-ae83-5e82193aca51.mp4
- 
+
+If you want predicted masks to be automatically overdrawn be replacing old masks with new masks, you can set "replace_masks" parameter to true:
+
+https://user-images.githubusercontent.com/91027877/233377950-c480eb09-4727-41ca-ab8f-24214ed9d945.mp4
+
 # Controls
 
 | Key                                                           | Description                               |
