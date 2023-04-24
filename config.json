@@ -19,7 +19,7 @@
   ],
   "community_agent": false,
   "docker_image": "supervisely/segment-anything:1.0.1",
-  "instance_version": "6.7.16",
+  "instance_version": "6.7.33",
   "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
   "port": 8000,
   "task_location": "application_sessions"
