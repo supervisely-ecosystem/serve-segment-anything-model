@@ -285,8 +285,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # get predicted masks
             if (
                 self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
-                and self.previous_image_id == settings["input_image_id"]
-            ):
+            ).all() and self.previous_image_id == settings["input_image_id"]:
                 # get mask from previous predicton and use at as an input for new prediction
                 mask_input = self.cache[settings["input_image_id"]]["previous_mask"]
                 masks, _, _ = self.predictor.predict(
