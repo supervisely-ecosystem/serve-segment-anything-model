@@ -112,7 +112,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=100, ttl=5 * 60)
+        self.cache = TTLCache(maxsize=100, ttl=3 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
@@ -282,15 +282,35 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
             self.set_image_data(input_image, settings)
-            self.previous_image_id = settings["input_image_id"]
             # get predicted masks
-            masks, _, _ = self.predictor.predict(
-                point_coords=point_coordinates,
-                point_labels=point_labels,
-                box=bbox_coordinates[None, :],
-                multimask_output=False,
-            )
+            if (
+                self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
+                and self.previous_image_id == settings["input_image_id"]
+            ):
+                # get mask from previous predicton and use at as an input for new prediction
+                mask_input = self.cache[settings["input_image_id"]]["previous_mask"]
+                masks, _, _ = self.predictor.predict(
+                    point_coords=point_coordinates,
+                    point_labels=point_labels,
+                    box=bbox_coordinates[None, :],
+                    mask_input=mask_input,
+                    multimask_output=False,
+                )
+            else:
+                masks, _, _ = self.predictor.predict(
+                    point_coords=point_coordinates,
+                    point_labels=point_labels,
+                    box=bbox_coordinates[None, :],
+                    multimask_output=False,
+                )
             mask = masks[0]
+            # save bbox ccordinates and mask to cache
+            self.cache[settings["input_image_id"]] = {
+                "previous_bbox": bbox_coordinates,
+                "previous_mask": mask,
+            }
+            # update previous_image_id variable
+            self.previous_image_id = settings["input_image_id"]
             predictions.append(sly.nn.PredictionMask(class_name=class_name, mask=mask))
         return predictions
 
