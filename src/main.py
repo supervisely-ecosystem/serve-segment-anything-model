@@ -69,9 +69,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             selected_model = self.gui.get_checkpoint_info()["Model"]
             weights_link = models_data[selected_model]["weights_link"]
             weights_file_name = selected_model.replace(" ", "_") + ".pth"
-            weights_dst_path = os.path.join(weights_location_path, weights_file_name)
+            # weights_dst_path = os.path.join(weights_location_path, weights_file_name)
             # for debug
-            # weights_dst_path = os.path.join(model_dir, weights_file_name)
+            weights_dst_path = os.path.join(model_dir, weights_file_name)
             if not sly.fs.file_exists(weights_dst_path):
                 self.download(src_path=weights_link, dst_path=weights_dst_path)
         elif model_source == "Custom models":
@@ -366,12 +366,14 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             self._inference_image_lock.acquire()
             try:
                 # predict
-                logger.debug(f"predict: {smtool_state['request_uid']}")
+                # logger.debug(f"predict: {smtool_state['request_uid']}")
                 settings["mode"] = "combined"
                 if "image_id" in smtool_state:
                     settings["input_image_id"] = smtool_state["image_id"]
                 elif "video" in smtool_state:
                     settings["input_image_id"] = hash_str
+                elif "image_hash" in smtool_state:
+                    settings["input_image_id"] = smtool_state["image_hash"]
                 settings["bbox_coordinates"] = [
                     crop[0]["y"],
                     crop[0]["x"],
@@ -392,7 +394,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 )
                 pred_mask = self.predict(image_path, settings)[0].mask
             finally:
-                logger.debug(f"predict done: {smtool_state['request_uid']}")
+                # logger.debug(f"predict done: {smtool_state['request_uid']}")
                 self._inference_image_lock.release()
                 silent_remove(image_path)
 
@@ -423,6 +425,11 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     "success": True,
                     "error": None,
                 }
+            return response
+
+        @server.post("/is_online")
+        def is_online(response: Response, request: Request):
+            response = {"is_online": True}
             return response
 
 
