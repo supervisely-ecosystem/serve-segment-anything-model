@@ -97,6 +97,10 @@ You can also use this app for segmenting objects on videos using [video labeling
 
 https://user-images.githubusercontent.com/91027877/233416370-6e37d654-96eb-42fe-91f0-4ea7a6e6503a.mp4
 
+If you want to label batch of images fast, you can use this app in combination with [batched smart tool](https://ecosystem.supervisely.com/apps/dev-smart-tool-batched):
+
+https://user-images.githubusercontent.com/91027877/239091427-cc8cf488-db46-4786-b878-ba71af85f99c.mp4
+
 # Controls
 
 | Key                                                           | Description                               |
