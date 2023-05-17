@@ -69,9 +69,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             selected_model = self.gui.get_checkpoint_info()["Model"]
             weights_link = models_data[selected_model]["weights_link"]
             weights_file_name = selected_model.replace(" ", "_") + ".pth"
-            # weights_dst_path = os.path.join(weights_location_path, weights_file_name)
+            weights_dst_path = os.path.join(weights_location_path, weights_file_name)
             # for debug
-            weights_dst_path = os.path.join(model_dir, weights_file_name)
+            # weights_dst_path = os.path.join(model_dir, weights_file_name)
             if not sly.fs.file_exists(weights_dst_path):
                 self.download(src_path=weights_link, dst_path=weights_dst_path)
         elif model_source == "Custom models":
