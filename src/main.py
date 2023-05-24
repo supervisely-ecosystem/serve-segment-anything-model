@@ -112,7 +112,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=100, ttl=3 * 60)
+        self.cache = TTLCache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
         self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
@@ -284,8 +284,12 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             self.set_image_data(input_image, settings)
             # get predicted masks
             if (
-                self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
-            ).all() and self.previous_image_id == settings["input_image_id"]:
+                settings["input_image_id"] in self.cache
+                and (
+                    self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
+                ).all()
+                and self.previous_image_id == settings["input_image_id"]
+            ):
                 # get mask from previous predicton and use at as an input for new prediction
                 mask_input = self.cache[settings["input_image_id"]]["mask_input"]
                 masks, scores, logits = self.predictor.predict(
@@ -303,8 +307,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     multimask_output=False,
                 )
             # save bbox ccordinates and mask to cache
-            self.cache[settings["input_image_id"]]["previous_bbox"] = bbox_coordinates
-            self.cache[settings["input_image_id"]]["mask_input"] = logits[0]
+            if settings["input_image_id"] in self.cache:
+                self.cache[settings["input_image_id"]]["previous_bbox"] = bbox_coordinates
+                self.cache[settings["input_image_id"]]["mask_input"] = logits[0]
             # update previous_image_id variable
             self.previous_image_id = settings["input_image_id"]
             mask = masks[0]
