@@ -22,5 +22,8 @@
   "instance_version": "6.7.33",
   "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
   "port": 8000,
-  "task_location": "application_sessions"
+  "task_location": "application_sessions",
+  "license": {
+    "type": "Apache-2.0" 
+  }
 }
