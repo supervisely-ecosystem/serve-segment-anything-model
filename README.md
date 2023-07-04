@@ -114,7 +114,7 @@ https://user-images.githubusercontent.com/91027877/239091427-cc8cf488-db46-4786-
 | <kbd>Ctrl + H</kbd>                                           | Hide all labels                           |
 
 
-<p align="left"> <img align="center" src="https://i.imgur.com/jxySekj.png" width="50"> <b>—</b> Auto add positivie point to rectangle button (<b>ON</b> by default for SmartTool apps) </p>
+<p align="left"> <img align="center" src="media/c1.png" width="50"> <b>—</b> Auto add positivie point to rectangle button (<b>ON</b> by default for SmartTool apps) </p>
 
 <div align="center" markdown>
 <img src="https://user-images.githubusercontent.com/119248312/229995019-9a9dece7-516f-4b44-8b73-cdd01c1a4178.jpg" width="90%"/>
