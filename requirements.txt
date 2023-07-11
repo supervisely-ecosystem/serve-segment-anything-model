@@ -1,4 +1,4 @@
-supervisely==6.71.15
+supervisely==6.72.68
 git+https://github.com/facebookresearch/segment-anything.git
 --extra-index-url https://download.pytorch.org/whl/cu113
 torch==1.12.1+cu113
