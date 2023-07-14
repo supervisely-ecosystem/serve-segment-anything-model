@@ -102,7 +102,15 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # build model
         self.sam = sam_model_registry[model_name](checkpoint=weights_path)
         # load model on device
-        self.sam.to(device=device)
+        if device != "cpu":
+            if device == "cuda":
+                torch.cuda.set_device(0)
+            else:
+                torch.cuda.set_device(int(device[-1]))
+            torch_device = torch.device(device)
+            self.sam.to(device=torch_device)
+        else:
+           self.sam.to(device=device) 
         # build predictor
         self.predictor = SamPredictor(self.sam)
         # define class names
