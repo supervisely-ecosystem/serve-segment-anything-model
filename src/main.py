@@ -104,9 +104,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # load model on device
         if device != "cpu":
             if device == "cuda":
-                torch_device = torch.cuda.set_device(0)
+                torch.cuda.set_device(0)
             else:
-                torch_device = torch.cuda.set_device(int(device[-1]))
+                torch.cuda.set_device(int(device[-1]))
+            torch_device = torch.device(device)
             self.sam.to(device=torch_device)
         else:
            self.sam.to(device=device) 
