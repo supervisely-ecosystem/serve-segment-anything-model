@@ -337,7 +337,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
 
             logger.debug(
                 f"smart_segmentation inference: context=",
-                extra={**request.state.context, "api_token": "***"},
+                extra={**request.state.context},
             )
 
             try:
@@ -396,7 +396,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             self._inference_image_lock.acquire()
             try:
                 # predict
-                # logger.debug(f"predict: {smtool_state['request_uid']}")
+                logger.debug("Preparing settings for inference request...")
                 settings["mode"] = "combined"
                 if "image_id" in smtool_state:
                     settings["input_image_id"] = smtool_state["image_id"]
@@ -424,7 +424,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 )
                 pred_mask = self.predict(image_path, settings)[0].mask
             finally:
-                # logger.debug(f"predict done: {smtool_state['request_uid']}")
+                logger.debug("Predict done")
                 self._inference_image_lock.release()
                 silent_remove(image_path)
 
