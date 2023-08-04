@@ -39,6 +39,11 @@ Besides segmenting new objects, proposed method allows to correct external masks
 instance or semantic segmentation models. A user can fix false negative and false positive regions with positive (green)
 and negative (red) clicks, respectively.
 
+🔥🔥🔥 Check out our [youtube tutorial](https://youtu.be/PQCdLCN7uCo) and the [complete guide](https://supervisely.com/blog/xmem-segment-anything-video-object-segmentation/)  in our blog:
+
+<a href="https://youtu.be/PQCdLCN7uCo" target="_blank"><img src="https://github.com/supervisely-ecosystem/XMem/assets/106374579/c4c18f53-27f0-4469-8a07-f59404199e64"/></a>
+
+
 # How to Run
 
 **Pretrained models**
