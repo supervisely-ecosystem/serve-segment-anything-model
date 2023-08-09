@@ -1,13 +1,13 @@
-import supervisely as sly
-from supervisely.imaging.color import generate_rgb
-from supervisely.app.widgets import RadioGroup, Field
-from dotenv import load_dotenv
 import os
-from pathlib import Path
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import cv2
+import threading
+import time
+
+from cachetools import TTLCache
+from dotenv import load_dotenv
 
 try:
     from typing import Literal
@@ -17,17 +17,21 @@ except ImportError:
 from typing import List, Any, Dict
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from fastapi import Response, Request, status
-from aiocache import Cache
-import threading
+from pathlib import Path
+
+# from aiocache import Cache
+
+import supervisely as sly
+from supervisely.imaging.color import generate_rgb
+from supervisely.app.widgets import RadioGroup, Field
 from supervisely.app.fastapi import run_sync
-import time
 from supervisely.nn.inference.interactive_segmentation import functional
 from supervisely.sly_logger import logger
 from supervisely.imaging import image as sly_image
 from supervisely.io.fs import silent_remove
 from supervisely._utils import rand_str
 from supervisely.app.content import get_data_dir
-from cachetools import TTLCache
+
 
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -123,7 +127,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         self.cache = TTLCache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
-        self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
+        # self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
         print(f"✅ Model has been successfully loaded on {device.upper()} device")
 
     def get_info(self):
