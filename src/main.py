@@ -382,20 +382,20 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # download image if needed (using cache)
             app_dir = get_data_dir()
             hash_str = functional.get_hash_from_context(smtool_state)
-            if run_sync(self._inference_image_cache.get(hash_str)) is None:
-                logger.debug(f"downloading image: {hash_str}")
-                image_np = functional.download_image_from_context(
-                    smtool_state,
-                    api,
-                    app_dir,
-                    cache_load_img=self.download_image,
-                    cache_load_frame=self.download_frame,
-                    cache_load_img_hash=self.download_image_by_hash,
-                )
-                run_sync(self._inference_image_cache.set(hash_str, image_np))
-            else:
-                logger.debug(f"image found in cache: {hash_str}")
-                image_np = run_sync(self._inference_image_cache.get(hash_str))
+            # if run_sync(self._inference_image_cache.get(hash_str)) is None:
+            #     logger.debug(f"downloading image: {hash_str}")
+            image_np = functional.download_image_from_context(
+                smtool_state,
+                api,
+                app_dir,
+                cache_load_img=self.download_image,
+                cache_load_frame=self.download_frame,
+                cache_load_img_hash=self.download_image_by_hash,
+            )
+            #     run_sync(self._inference_image_cache.set(hash_str, image_np))
+            # else:
+            #     logger.debug(f"image found in cache: {hash_str}")
+            #     image_np = run_sync(self._inference_image_cache.get(hash_str))
 
             # crop
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
