@@ -110,7 +110,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             torch_device = torch.device(device)
             self.sam.to(device=torch_device)
         else:
-           self.sam.to(device=device) 
+            self.sam.to(device=device)
         # build predictor
         self.predictor = SamPredictor(self.sam)
         # define class names
@@ -327,6 +327,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
     def serve(self):
         super().serve()
         server = self._app.get_server()
+        self.add_cache_endpoint(server)
 
         @server.post("/smart_segmentation")
         def smart_segmentation(response: Response, request: Request):
@@ -383,7 +384,14 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             hash_str = functional.get_hash_from_context(smtool_state)
             if run_sync(self._inference_image_cache.get(hash_str)) is None:
                 logger.debug(f"downloading image: {hash_str}")
-                image_np = functional.download_image_from_context(smtool_state, api, app_dir)
+                image_np = functional.download_image_from_context(
+                    smtool_state,
+                    api,
+                    app_dir,
+                    cache_load_img=self.download_image,
+                    cache_load_frame=self.download_frame,
+                    cache_load_img_hash=self.download_image_by_hash,
+                )
                 run_sync(self._inference_image_cache.set(hash_str, image_np))
             else:
                 logger.debug(f"image found in cache: {hash_str}")
