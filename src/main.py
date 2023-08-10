@@ -151,15 +151,18 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         if settings["input_image_id"] != self.previous_image_id:
             if settings["input_image_id"] not in self.cache:
                 self.predictor.set_image(input_image)
-                self.cache[settings["input_image_id"]] = {
-                    "features": self.predictor.features,
-                    "input_size": self.predictor.input_size,
-                    "original_size": self.predictor.original_size,
-                }
+                self.cache.set(
+                    settings["input_image_id"],
+                    {
+                        "features": self.predictor.features,
+                        "input_size": self.predictor.input_size,
+                        "original_size": self.predictor.original_size,
+                    },
+                )
             else:
-                self.predictor.features = self.cache[settings["input_image_id"]]["features"]
-                self.predictor.input_size = self.cache[settings["input_image_id"]]["input_size"]
-                self.predictor.original_size = self.cache[settings["input_image_id"]][
+                self.predictor.features = self.cache.get(settings["input_image_id"])["features"]
+                self.predictor.input_size = self.cache.get(settings["input_image_id"])["input_size"]
+                self.predictor.original_size = self.cache.get(settings["input_image_id"])[
                     "original_size"
                 ]
 
@@ -297,12 +300,13 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             if (
                 settings["input_image_id"] in self.cache
                 and (
-                    self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
+                    self.cache.get(settings["input_image_id"]).get("previous_bbox")
+                    == bbox_coordinates
                 ).all()
                 and self.previous_image_id == settings["input_image_id"]
             ):
                 # get mask from previous predicton and use at as an input for new prediction
-                mask_input = self.cache[settings["input_image_id"]]["mask_input"]
+                mask_input = self.cache.get(settings["input_image_id"])["mask_input"]
                 masks, scores, logits = self.predictor.predict(
                     point_coords=point_coordinates,
                     point_labels=point_labels,
@@ -319,8 +323,11 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 )
             # save bbox ccordinates and mask to cache
             if settings["input_image_id"] in self.cache:
-                self.cache[settings["input_image_id"]]["previous_bbox"] = bbox_coordinates
-                self.cache[settings["input_image_id"]]["mask_input"] = logits[0]
+                image_id = settings["input_image_id"]
+                settings = self.cache.get(image_id)
+                settings["previous_bbox"] = bbox_coordinates
+                settings["mask_input"] = logits[0]
+                self.cache.set(image_id, settings)
             # update previous_image_id variable
             self.previous_image_id = settings["input_image_id"]
             mask = masks[0]
