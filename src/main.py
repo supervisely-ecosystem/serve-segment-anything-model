@@ -22,7 +22,6 @@ from pathlib import Path
 import supervisely as sly
 from supervisely.imaging.color import generate_rgb
 from supervisely.app.widgets import RadioGroup, Field
-from supervisely.app.fastapi import run_sync
 from supervisely.nn.inference.interactive_segmentation import functional
 from supervisely.sly_logger import logger
 from supervisely.imaging import image as sly_image
@@ -125,9 +124,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         self.cache = Cache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
-        self._inference_image_cache = Cache(ttl=60)
 
-        print(f"✅ Model has been successfully loaded on {device.upper()} device")
+        # TODO: add maxsize after discuss
+        self._inference_image_cache = Cache(ttl=60)
 
     def get_info(self):
         info = super().get_info()
