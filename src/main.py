@@ -354,6 +354,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             try:
                 state = request.state.state
                 settings = self._get_inference_settings(state)
+                logger.debug("Parsed settings", extra=settings)
                 smtool_state = request.state.context
                 api = request.state.api
                 crop = smtool_state["crop"]
