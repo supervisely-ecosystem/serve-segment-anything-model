@@ -160,11 +160,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     },
                 )
             else:
-                self.predictor.features = self.cache.get(settings["input_image_id"])["features"]
-                self.predictor.input_size = self.cache.get(settings["input_image_id"])["input_size"]
-                self.predictor.original_size = self.cache.get(settings["input_image_id"])[
-                    "original_size"
-                ]
+                cached_data = self.cache.get(settings["input_image_id"])
+                self.predictor.features = cached_data["features"]
+                self.predictor.input_size = cached_data["input_size"]
+                self.predictor.original_size = cached_data["original_size"]
 
     def predict(self, image_path: str, settings: Dict[str, Any]) -> List[sly.nn.PredictionMask]:
         # prepare input data
@@ -324,10 +323,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # save bbox ccordinates and mask to cache
             if settings["input_image_id"] in self.cache:
                 image_id = settings["input_image_id"]
-                settings = self.cache.get(image_id)
-                settings["previous_bbox"] = bbox_coordinates
-                settings["mask_input"] = logits[0]
-                self.cache.set(image_id, settings)
+                cached_data = self.cache.get(image_id)
+                cached_data["previous_bbox"] = bbox_coordinates
+                cached_data["mask_input"] = logits[0]
+                self.cache.set(image_id, cached_data)
             # update previous_image_id variable
             self.previous_image_id = settings["input_image_id"]
             mask = masks[0]
@@ -441,7 +440,6 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     point_coordinates,
                     point_labels,
                 )
-                logger.debug("Parsed settings", extra=settings)
                 pred_mask = self.predict(image_path, settings)[0].mask
             finally:
                 logger.debug("Predict done")
