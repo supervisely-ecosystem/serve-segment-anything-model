@@ -354,7 +354,6 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             try:
                 state = request.state.state
                 settings = self._get_inference_settings(state)
-                logger.debug("Parsed settings", extra=settings)
                 smtool_state = request.state.context
                 api = request.state.api
                 crop = smtool_state["crop"]
@@ -442,6 +441,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     point_coordinates,
                     point_labels,
                 )
+                logger.debug("Parsed settings", extra=settings)
                 pred_mask = self.predict(image_path, settings)[0].mask
             finally:
                 logger.debug("Predict done")
