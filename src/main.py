@@ -1,5 +1,3 @@
-import asyncio
-import nest_asyncio
 import os
 import numpy as np
 import torch
@@ -7,8 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 import threading
 import time
-
-from cachetools import TTLCache
+from cacheout import Cache
 from dotenv import load_dotenv
 
 try:
@@ -21,7 +18,6 @@ from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamP
 from fastapi import Response, Request, status
 from pathlib import Path
 
-from aiocache import Cache
 
 import supervisely as sly
 from supervisely.imaging.color import generate_rgb
@@ -34,7 +30,6 @@ from supervisely.io.fs import silent_remove
 from supervisely._utils import rand_str
 from supervisely.app.content import get_data_dir
 
-nest_asyncio.apply()
 
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -127,11 +122,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=100, ttl=5 * 60)
+        self.cache = Cache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
-        self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
-        self._loop = asyncio.get_event_loop()
+        self._inference_image_cache = Cache(ttl=60)
 
         print(f"✅ Model has been successfully loaded on {device.upper()} device")
 
@@ -391,10 +385,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # download image if needed (using cache)
             app_dir = get_data_dir()
             hash_str = functional.get_hash_from_context(smtool_state)
-            img_exists = self._loop.run_until_complete(
-                self._inference_image_cache.exists(hash_str)
-            )
-            if not img_exists:
+
+            if not hash_str in self._inference_image_cache:
                 logger.debug(f"downloading image: {hash_str}")
                 image_np = functional.download_image_from_context(
                     smtool_state,
@@ -404,16 +396,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     cache_load_frame=self.download_frame,
                     cache_load_img_hash=self.download_image_by_hash,
                 )
-                self._loop.run_until_complete(
-                    self._inference_image_cache.set(hash_str, image_np)
-                )
-                # run_sync(self._inference_image_cache.set(hash_str, image_np))
+                self._inference_image_cache.set(hash_str, image_np)
             else:
                 logger.debug(f"image found in cache: {hash_str}")
-                # image_np = run_sync(self._inference_image_cache.get(hash_str))
-                image_np = self._loop.run_until_complete(
-                    self._inference_image_cache.get(hash_str)
-                )
+                image_np = self._inference_image_cache.get(hash_str)
 
             # crop
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
