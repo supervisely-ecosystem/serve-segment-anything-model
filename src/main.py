@@ -386,7 +386,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             app_dir = get_data_dir()
             hash_str = functional.get_hash_from_context(smtool_state)
 
-            if not hash_str in self._inference_image_cache:
+            if hash_str not in self._inference_image_cache:
                 logger.debug(f"downloading image: {hash_str}")
                 image_np = functional.download_image_from_context(
                     smtool_state,
