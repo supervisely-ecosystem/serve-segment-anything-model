@@ -1,13 +1,12 @@
-import supervisely as sly
-from supervisely.imaging.color import generate_rgb
-from supervisely.app.widgets import RadioGroup, Field
-from dotenv import load_dotenv
 import os
-from pathlib import Path
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import cv2
+import threading
+import time
+from cacheout import Cache
+from dotenv import load_dotenv
 
 try:
     from typing import Literal
@@ -17,17 +16,19 @@ except ImportError:
 from typing import List, Any, Dict
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from fastapi import Response, Request, status
-from aiocache import Cache
-import threading
-from supervisely.app.fastapi import run_sync
-import time
+from pathlib import Path
+
+
+import supervisely as sly
+from supervisely.imaging.color import generate_rgb
+from supervisely.app.widgets import RadioGroup, Field
 from supervisely.nn.inference.interactive_segmentation import functional
 from supervisely.sly_logger import logger
 from supervisely.imaging import image as sly_image
 from supervisely.io.fs import silent_remove
 from supervisely._utils import rand_str
 from supervisely.app.content import get_data_dir
-from cachetools import TTLCache
+
 
 load_dotenv("local.env")
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -110,7 +111,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             torch_device = torch.device(device)
             self.sam.to(device=torch_device)
         else:
-           self.sam.to(device=device) 
+            self.sam.to(device=device)
         # build predictor
         self.predictor = SamPredictor(self.sam)
         # define class names
@@ -120,11 +121,12 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         # variable for storing image ids from previous inference iterations
         self.previous_image_id = None
         # dict for storing model variables to avoid unnecessary calculations
-        self.cache = TTLCache(maxsize=100, ttl=5 * 60)
+        self.cache = Cache(maxsize=100, ttl=5 * 60)
         # set variables for smart tool mode
         self._inference_image_lock = threading.Lock()
-        self._inference_image_cache = Cache(Cache.MEMORY, ttl=60)
-        print(f"✅ Model has been successfully loaded on {device.upper()} device")
+
+        # TODO: add maxsize after discuss
+        self._inference_image_cache = Cache(ttl=60)
 
     def get_info(self):
         info = super().get_info()
@@ -148,17 +150,19 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         if settings["input_image_id"] != self.previous_image_id:
             if settings["input_image_id"] not in self.cache:
                 self.predictor.set_image(input_image)
-                self.cache[settings["input_image_id"]] = {
-                    "features": self.predictor.features,
-                    "input_size": self.predictor.input_size,
-                    "original_size": self.predictor.original_size,
-                }
+                self.cache.set(
+                    settings["input_image_id"],
+                    {
+                        "features": self.predictor.features,
+                        "input_size": self.predictor.input_size,
+                        "original_size": self.predictor.original_size,
+                    },
+                )
             else:
-                self.predictor.features = self.cache[settings["input_image_id"]]["features"]
-                self.predictor.input_size = self.cache[settings["input_image_id"]]["input_size"]
-                self.predictor.original_size = self.cache[settings["input_image_id"]][
-                    "original_size"
-                ]
+                cached_data = self.cache.get(settings["input_image_id"])
+                self.predictor.features = cached_data["features"]
+                self.predictor.input_size = cached_data["input_size"]
+                self.predictor.original_size = cached_data["original_size"]
 
     def predict(self, image_path: str, settings: Dict[str, Any]) -> List[sly.nn.PredictionMask]:
         # prepare input data
@@ -294,12 +298,13 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             if (
                 settings["input_image_id"] in self.cache
                 and (
-                    self.cache[settings["input_image_id"]].get("previous_bbox") == bbox_coordinates
+                    self.cache.get(settings["input_image_id"]).get("previous_bbox")
+                    == bbox_coordinates
                 ).all()
                 and self.previous_image_id == settings["input_image_id"]
             ):
                 # get mask from previous predicton and use at as an input for new prediction
-                mask_input = self.cache[settings["input_image_id"]]["mask_input"]
+                mask_input = self.cache.get(settings["input_image_id"])["mask_input"]
                 masks, scores, logits = self.predictor.predict(
                     point_coords=point_coordinates,
                     point_labels=point_labels,
@@ -316,8 +321,11 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 )
             # save bbox ccordinates and mask to cache
             if settings["input_image_id"] in self.cache:
-                self.cache[settings["input_image_id"]]["previous_bbox"] = bbox_coordinates
-                self.cache[settings["input_image_id"]]["mask_input"] = logits[0]
+                image_id = settings["input_image_id"]
+                cached_data = self.cache.get(image_id)
+                cached_data["previous_bbox"] = bbox_coordinates
+                cached_data["mask_input"] = logits[0]
+                self.cache.set(image_id, cached_data)
             # update previous_image_id variable
             self.previous_image_id = settings["input_image_id"]
             mask = masks[0]
@@ -327,6 +335,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
     def serve(self):
         super().serve()
         server = self._app.get_server()
+        self.add_cache_endpoint(server)
 
         @server.post("/smart_segmentation")
         def smart_segmentation(response: Response, request: Request):
@@ -381,13 +390,21 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             # download image if needed (using cache)
             app_dir = get_data_dir()
             hash_str = functional.get_hash_from_context(smtool_state)
-            if run_sync(self._inference_image_cache.get(hash_str)) is None:
+
+            if hash_str not in self._inference_image_cache:
                 logger.debug(f"downloading image: {hash_str}")
-                image_np = functional.download_image_from_context(smtool_state, api, app_dir)
-                run_sync(self._inference_image_cache.set(hash_str, image_np))
+                image_np = functional.download_image_from_context(
+                    smtool_state,
+                    api,
+                    app_dir,
+                    cache_load_img=self.download_image,
+                    cache_load_frame=self.download_frame,
+                    cache_load_img_hash=self.download_image_by_hash,
+                )
+                self._inference_image_cache.set(hash_str, image_np)
             else:
                 logger.debug(f"image found in cache: {hash_str}")
-                image_np = run_sync(self._inference_image_cache.get(hash_str))
+                image_np = self._inference_image_cache.get(hash_str)
 
             # crop
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
