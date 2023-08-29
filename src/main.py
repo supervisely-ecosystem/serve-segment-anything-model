@@ -408,6 +408,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
 
             # crop
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
+            if isinstance(image_np, list):
+                image_np = image_np[0]
             sly_image.write(image_path, image_np)
 
             self._inference_image_lock.acquire()
@@ -478,6 +480,21 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         def is_online(response: Response, request: Request):
             response = {"is_online": True}
             return response
+        
+        @server.post("/smart_segmentation_batched")
+        def smart_segmentation_batched(response: Response, request: Request):
+            response_batch = {}
+            data = request.state.context["data_to_process"]
+            app_session_id = sly.io.env.task_id()
+            for image_idx, image_data in data.items():
+                image_prediction = api.task.send_request(
+                    app_session_id,
+                    "smart_segmentation",
+                    data={},
+                    context=image_data,
+                )
+                response_batch[image_idx] = image_prediction
+            return response_batch
 
 
 m = SegmentAnythingModel(
