@@ -1,0 +1,7 @@
+# git+https://github.com/supervisely/supervisely.git@some-test-branch
+supervisely==6.72.137
+
+# git+https://github.com/facebookresearch/segment-anything.git
+# --extra-index-url https://download.pytorch.org/whl/cu113
+# torch==1.12.1+cu113
+# torchvision==0.13.1+cu113
