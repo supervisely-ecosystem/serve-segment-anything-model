@@ -13,7 +13,8 @@
   "icon": "https://user-images.githubusercontent.com/12828725/259969661-8fff67a8-5a49-467e-8e9b-30082e4cdf16.png",
   "icon_cover": true,
   "poster": "https://user-images.githubusercontent.com/115161827/232042280-efa9361c-c122-4ccd-80d6-575a63b4fcf7.png",
-  "need_gpu": true,
+  "need_gpu": false,
+  "gpu": "preferred",
   "session_tags": [
     "sly_smart_annotation",
     "deployed_nn_object_segmentation"
