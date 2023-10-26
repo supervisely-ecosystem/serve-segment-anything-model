@@ -17,6 +17,7 @@ from typing import List, Any, Dict
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from fastapi import Response, Request, status
 from pathlib import Path
+from cachetools import LRUCache
 
 
 import supervisely as sly
@@ -127,6 +128,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
 
         # TODO: add maxsize after discuss
         self._inference_image_cache = Cache(ttl=60)
+        self._init_mask_cache = LRUCache(maxsize=100)  # cache of sly.Bitmaps
 
     def get_info(self):
         info = super().get_info()
@@ -294,6 +296,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 self._model_meta = self._model_meta.add_obj_class(new_class)
             # generate image embedding - model will remember this embedding and use it for subsequent mask prediction
             self.set_image_data(input_image, settings)
+            init_mask = settings["init_mask"]
             # get predicted masks
             if (
                 settings["input_image_id"] in self.cache
@@ -305,6 +308,27 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             ):
                 # get mask from previous predicton and use at as an input for new prediction
                 mask_input = self.cache.get(settings["input_image_id"])["mask_input"]
+                masks, scores, logits = self.predictor.predict(
+                    point_coords=point_coordinates,
+                    point_labels=point_labels,
+                    box=bbox_coordinates[None, :],
+                    mask_input=mask_input[None, :, :],
+                    multimask_output=False,
+                )
+            elif init_mask is not None:
+                # transform
+                mask_input = self.predictor.transform.apply_image(init_mask)
+                # pad
+                h, w = mask_input.shape[:2]
+                padh = self.predictor.model.image_encoder.img_size - h
+                padw = self.predictor.model.image_encoder.img_size - w
+                mask_input = np.pad(mask_input, ((0, padh), (0, padw)))
+                # downscale to 256x256
+                mask_input = cv2.resize(mask_input, (256,256), interpolation=cv2.INTER_LINEAR)
+                # put values
+                mask_input = mask_input.astype(float)
+                mask_input[mask_input > 0] = 20
+                mask_input[mask_input <= 0] = -20
                 masks, scores, logits = self.predictor.predict(
                     point_coords=point_coordinates,
                     point_labels=point_labels,
@@ -411,6 +435,24 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             if isinstance(image_np, list):
                 image_np = image_np[0]
             sly_image.write(image_path, image_np)
+
+            # Prepare init_mask
+            figure_id = smtool_state.get("figure_id")
+            image_id = smtool_state["image_id"]
+            if smtool_state.get("init_figure") is True:
+                # Download and save in Cache
+                init_mask = functional.download_init_mask(api, figure_id, image_id)
+                self._init_mask_cache[figure_id] = init_mask
+            elif self._init_mask_cache.get(figure_id) is not None:
+                # Load from Cache
+                init_mask = self._init_mask_cache[figure_id]
+            else:
+                init_mask = None
+            if init_mask is not None:
+                init_mask = functional.bitmap_to_mask(api, init_mask, image_id)
+                # init_mask = functional.crop_image(crop, init_mask)
+                assert init_mask.shape[:2] == image_np.shape[:2]
+            settings["init_mask"] = init_mask
 
             self._inference_image_lock.acquire()
             try:
