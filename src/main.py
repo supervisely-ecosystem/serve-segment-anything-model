@@ -436,10 +436,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 image_np = image_np[0]
             sly_image.write(image_path, image_np)
 
-            # Prepare init_mask
+            # Prepare init_mask (only for images)
             figure_id = smtool_state.get("figure_id")
-            image_id = smtool_state["image_id"]
-            if smtool_state.get("init_figure") is True:
+            image_id = smtool_state.get("image_id")
+            if smtool_state.get("init_figure") is True and image_id is not None:
                 # Download and save in Cache
                 init_mask = functional.download_init_mask(api, figure_id, image_id)
                 self._init_mask_cache[figure_id] = init_mask
