@@ -28,4 +28,7 @@
   "license": {
     "type": "Apache-2.0" 
   }
+  "modal_template_state": {
+    "autostart": true
+  }
 }
