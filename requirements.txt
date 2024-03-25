@@ -1,5 +1,5 @@
 # git+https://github.com/supervisely/supervisely.git@some-test-branch
-supervisely==6.73.22
+supervisely==6.73.59
 # git+https://github.com/facebookresearch/segment-anything.git
 # --extra-index-url https://download.pytorch.org/whl/cu113
 # torch==1.12.1+cu113
