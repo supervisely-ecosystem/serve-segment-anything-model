@@ -27,5 +27,5 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: Dockerfile
-          tags: supervisely/${{ env.REPOSITORY_NAME }}:${{ github.event.inputs.tag_version }}
+          file: docker/Dockerfile
+          tags: supervisely/segment-anything:${{ github.event.inputs.tag_version }}
