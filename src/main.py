@@ -324,7 +324,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 padw = self.predictor.model.image_encoder.img_size - w
                 mask_input = np.pad(mask_input, ((0, padh), (0, padw)))
                 # downscale to 256x256
-                mask_input = cv2.resize(mask_input, (256,256), interpolation=cv2.INTER_LINEAR)
+                mask_input = cv2.resize(mask_input, (256, 256), interpolation=cv2.INTER_LINEAR)
                 # put values
                 mask_input = mask_input.astype(float)
                 mask_input[mask_input > 0] = 20
@@ -420,9 +420,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     smtool_state,
                     api,
                     app_dir,
-                    cache_load_img=self.download_image,
-                    cache_load_frame=self.download_frame,
-                    cache_load_img_hash=self.download_image_by_hash,
+                    cache_load_img=self.cache.download_image,
+                    cache_load_frame=self.cache.download_frame,
+                    cache_load_img_hash=self.cache.download_image_by_hash,
                 )
                 self._inference_image_cache.set(hash_str, image_np)
             else:
@@ -521,7 +521,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
         def is_online(response: Response, request: Request):
             response = {"is_online": True}
             return response
-        
+
         @server.post("/smart_segmentation_batched")
         def smart_segmentation_batched(response: Response, request: Request):
             response_batch = {}
