@@ -11,6 +11,6 @@ RUN python3 -m pip install supervisely==6.73.98
 
 RUN mkdir -p weights
 
-COPY --from=supervisely/segment-anything:1.0.0 /weights/ViT-B_SAM.pth /weights/ViT-B_SAM.pth
-COPY --from=supervisely/segment-anything:1.0.0 /weights/ViT-L_SAM.pth /weights/ViT-L_SAM.pth
-COPY --from=supervisely/segment-anything:1.0.0 /weights/ViT-H_SAM.pth /weights/ViT-H_SAM.pth
+COPY --from=supervisely/segment-anything:1.0.1 /weights/ViT-B_SAM.pth /weights/ViT-B_SAM.pth
+COPY --from=supervisely/segment-anything:1.0.1 /weights/ViT-L_SAM.pth /weights/ViT-L_SAM.pth
+COPY --from=supervisely/segment-anything:1.0.1 /weights/ViT-H_SAM.pth /weights/ViT-H_SAM.pth
