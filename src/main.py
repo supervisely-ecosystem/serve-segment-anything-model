@@ -448,7 +448,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             else:
                 init_mask = None
             if init_mask is not None:
-                init_mask = functional.bitmap_to_mask(api, init_mask, image_id)
+                init_mask = functional.bitmap_to_mask(init_mask, *image_np.shape[:2])
                 # init_mask = functional.crop_image(crop, init_mask)
                 assert init_mask.shape[:2] == image_np.shape[:2]
             settings["init_mask"] = init_mask
