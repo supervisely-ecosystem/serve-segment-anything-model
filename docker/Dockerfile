@@ -7,7 +7,7 @@ RUN pip3 install torchvision==0.13.1+cu113 --extra-index-url https://download.py
 RUN pip3 install git+https://github.com/facebookresearch/segment-anything.git
 RUN pip3 install cachetools
 
-RUN python3 -m pip install supervisely==6.73.102
+RUN python3 -m pip install supervisely==6.73.104
 
 RUN mkdir -p weights
 
