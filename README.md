@@ -11,11 +11,11 @@
   <a href="#Acknowledgment">Acknowledgment</a> 
 </p>
 
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervise.ly/apps/supervisely-ecosystem/serve-segment-anything-model)
-[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/supervisely-ecosystem/serve-segment-anything-model)
+[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/serve-segment-anything-model)
-[![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/serve-segment-anything-model.png)](https://supervise.ly)
-[![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/serve-segment-anything-model.png)](https://supervise.ly)
+[![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/serve-segment-anything-model.png)](https://supervisely.com)
+[![runs](https://app.supervisely.com/img/badges/runs/supervisely-ecosystem/serve-segment-anything-model.png)](https://supervisely.com)
  
 </div>
 
@@ -98,7 +98,7 @@ If you want predicted masks to be automatically overdrawn be replacing old masks
 
 https://user-images.githubusercontent.com/91027877/233377950-c480eb09-4727-41ca-ab8f-24214ed9d945.mp4
 
-You can also use this app for segmenting objects on videos using [video labeling tool](https://ecosystem.supervise.ly/apps/video-labeling-tool) (here is full [guide](https://www.youtube.com/watch?v=eaAh856QKYg) on working with smart tool in video labeling tool):
+You can also use this app for segmenting objects on videos using [video labeling tool](https://ecosystem.supervisely.com/apps/video-labeling-tool) (here is full [guide](https://www.youtube.com/watch?v=eaAh856QKYg) on working with smart tool in video labeling tool):
 
 https://user-images.githubusercontent.com/91027877/233416370-6e37d654-96eb-42fe-91f0-4ea7a6e6503a.mp4
 
