@@ -408,6 +408,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
 
             if hash_str not in self._inference_image_cache:
                 logger.debug(f"downloading image: {hash_str}")
+                t = time.monotonic()
                 image_np = functional.download_image_from_context(
                     smtool_state,
                     api,
@@ -417,16 +418,20 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     cache_load_img_hash=self.cache.download_image_by_hash,
                 )
                 self._inference_image_cache.set(hash_str, image_np)
+                logger.debug(f"image downloaded: {hash_str} in {time.monotonic() - t:.3f} sec")
             else:
                 logger.debug(f"image found in cache: {hash_str}")
                 image_np = self._inference_image_cache.get(hash_str)
 
             # crop
+            t = time.monotonic()
             image_path = os.path.join(app_dir, f"{time.time()}_{rand_str(10)}.jpg")
             if isinstance(image_np, list):
                 image_np = image_np[0]
             sly_image.write(image_path, image_np)
+            logger.debug(f"image saved to disk: {image_path} in {time.monotonic() - t:.3f} sec")
 
+            t = time.monotonic()
             # Prepare init_mask (only for images)
             figure_id = smtool_state.get("figure_id")
             image_id = smtool_state.get("image_id")
@@ -447,7 +452,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 # init_mask = functional.crop_image(crop, init_mask)
                 assert init_mask.shape[:2] == image_np.shape[:2]
             settings["init_mask"] = init_mask
+            logger.debug(f"init_mask prepared in {time.monotonic() - t:.3f} sec")
 
+            t = time.monotonic()
             self._inference_image_lock.acquire()
             try:
                 # predict
@@ -482,6 +489,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 logger.debug("Predict done")
                 self._inference_image_lock.release()
                 silent_remove(image_path)
+            logger.debug(f"smart_segmentation inference done in {time.monotonic() - t:.3f} sec")
 
             if pred_mask.any():
                 bitmap = sly.Bitmap(pred_mask)
