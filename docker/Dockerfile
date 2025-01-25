@@ -15,4 +15,5 @@ COPY --from=supervisely/segment-anything:1.0.1 /weights/ViT-H_SAM.pth /weights/V
 
 RUN mkdir /reqs
 COPY dev_requirements.txt /reqs/requirements.txt
+RUN python3 -m pip install setuptools==70.3.0
 RUN python3 -m pip install -r /reqs/requirements.txt
