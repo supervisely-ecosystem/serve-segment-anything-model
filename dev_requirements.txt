@@ -1,1 +1,2 @@
+setuptools==70.3.0
 git+https://github.com/supervisely/supervisely.git@extra-logs
