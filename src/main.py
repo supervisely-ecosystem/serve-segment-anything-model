@@ -407,7 +407,7 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
             hash_str = functional.get_hash_from_context(smtool_state)
 
             if hash_str not in self._inference_image_cache:
-                logger.debug(f"downloading image: {hash_str}")
+                logger.debug(f"Downloading image: {hash_str} to local cache")
                 t = time.monotonic()
                 image_np = functional.download_image_from_context(
                     smtool_state,
@@ -417,8 +417,10 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                     cache_load_frame=self.cache.download_frame,
                     cache_load_img_hash=self.cache.download_image_by_hash,
                 )
+                logger.debug(f"Image {hash_str} downloaded in {time.monotonic() - t:.3f} sec")
+                t = time.monotonic()
                 self._inference_image_cache.set(hash_str, image_np)
-                logger.debug(f"image downloaded: {hash_str} in {time.monotonic() - t:.3f} sec")
+                logger.debug(f"Image #{hash_str} added to local cache in {time.monotonic() - t:.3f} sec")
             else:
                 logger.debug(f"image found in cache: {hash_str}")
                 image_np = self._inference_image_cache.get(hash_str)
