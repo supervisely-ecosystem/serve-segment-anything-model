@@ -11,7 +11,7 @@
   <a href="#Acknowledgment">Acknowledgment</a> 
 </p>
 
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](../../../../supervisely-ecosystem/serve-segment-anything-model)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/supervisely-ecosystem/serve-segment-anything-model)
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/serve-segment-anything-model)
 [![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/serve-segment-anything-model.png)](https://supervisely.com)
@@ -98,11 +98,11 @@ If you want predicted masks to be automatically overdrawn be replacing old masks
 
 https://user-images.githubusercontent.com/91027877/233377950-c480eb09-4727-41ca-ab8f-24214ed9d945.mp4
 
-You can also use this app for segmenting objects on videos using [video labeling tool](../../../../supervisely-ecosystem/video-labeling-tool) (here is full [guide](https://www.youtube.com/watch?v=eaAh856QKYg) on working with smart tool in video labeling tool):
+You can also use this app for segmenting objects on videos using [video labeling tool](https://ecosystem.supervisely.com/apps/video-labeling-tool) (here is full [guide](https://www.youtube.com/watch?v=eaAh856QKYg) on working with smart tool in video labeling tool):
 
 https://user-images.githubusercontent.com/91027877/233416370-6e37d654-96eb-42fe-91f0-4ea7a6e6503a.mp4
 
-If you want to label batch of images fast, you can use this app in combination with [batched smart tool](../../../../supervisely-ecosystem/dev-smart-tool-batched):
+If you want to label batch of images fast, you can use this app in combination with [batched smart tool](https://ecosystem.supervisely.com/apps/dev-smart-tool-batched):
 
 https://user-images.githubusercontent.com/91027877/239091427-cc8cf488-db46-4786-b878-ba71af85f99c.mp4
 
