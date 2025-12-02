@@ -420,7 +420,9 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 logger.debug(f"Image {hash_str} downloaded in {time.monotonic() - t:.3f} sec")
                 t = time.monotonic()
                 self._inference_image_cache.set(hash_str, image_np)
-                logger.debug(f"Image #{hash_str} added to local cache in {time.monotonic() - t:.3f} sec")
+                logger.debug(
+                    f"Image #{hash_str} added to local cache in {time.monotonic() - t:.3f} sec"
+                )
             else:
                 logger.debug(f"image found in cache: {hash_str}")
                 image_np = self._inference_image_cache.get(hash_str)
@@ -471,8 +473,8 @@ class SegmentAnythingModel(sly.nn.inference.PromptableSegmentation):
                 settings["bbox_coordinates"] = [
                     crop[0]["y"],
                     crop[0]["x"],
-                    crop[1]["y"],
-                    crop[1]["x"],
+                    crop[1]["y"] + 1,
+                    crop[1]["x"] + 1,
                 ]
                 settings["bbox_class_name"] = "target"
                 point_coordinates, point_labels = [], []
