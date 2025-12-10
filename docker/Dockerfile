@@ -17,3 +17,5 @@ RUN mkdir /reqs
 COPY dev_requirements.txt /reqs/requirements.txt
 RUN python3 -m pip install setuptools==70.3.0
 RUN python3 -m pip install -r /reqs/requirements.txt
+
+LABEL python_sdk_version=6.73.483
