@@ -1,1 +1,1 @@
-git+https://github.com/supervisely/supervisely.git@extra-logs
+supervisely==6.73.483

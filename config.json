@@ -20,8 +20,8 @@
     "deployed_nn_object_segmentation"
   ],
   "community_agent": false,
-  "docker_image": "supervisely/segment-anything:1.0.7",
-  "instance_version": "6.9.22",
+  "docker_image": "supervisely/segment-anything:1.0.8",
+  "instance_version": "6.15.35",
   "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
   "port": 8000,
   "task_location": "application_sessions",
