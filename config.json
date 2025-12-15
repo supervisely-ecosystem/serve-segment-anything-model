@@ -1,40 +1,40 @@
 {
-  "name": "Serve Segment Anything Model",
-  "type": "app",
-  "version": "2.0.0",
-  "description": "Deploy model as REST API service",
-  "categories": [
-    "neural network",
-    "images",
-    "videos",
-    "interactive segmentation",
-    "serve"
-  ],
-  "icon": "https://user-images.githubusercontent.com/12828725/259969661-8fff67a8-5a49-467e-8e9b-30082e4cdf16.png",
-  "icon_cover": true,
-  "poster": "https://user-images.githubusercontent.com/115161827/232042280-efa9361c-c122-4ccd-80d6-575a63b4fcf7.png",
-  "need_gpu": false,
-  "gpu": "preferred",
-  "session_tags": [
-    "sly_smart_annotation",
-    "deployed_nn_object_segmentation"
-  ],
-  "community_agent": false,
-  "docker_image": "supervisely/segment-anything:1.0.8",
-  "instance_version": "6.15.35",
-  "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
-  "port": 8000,
-  "task_location": "application_sessions",
-  "license": {
-    "type": "Apache-2.0" 
-  },
-  "modal_template_state": {
-    "autostart": true
-  },
-  "access_restriction": [
-    {
-      "instance": "community_free",
-      "message": "The best interactive models for AI-assisted segmentation are already deployed in the Supervisely Cloud and are available for auto-labeling to all platform users. The number of API calls and the ability to run this app on your own agent (GPU) are limited for Free accounts. To increase usage limits or run the app on your GPU, switch to the <a href=\"/billing\">Pro</a> plan or request the <a href=\"https://supervisely.com/contact-us/\" target=\"_blank\">Enterprise</a> Edition."
-    }
-  ]
+    "name": "Serve Segment Anything Model",
+    "type": "app",
+    "version": "2.0.0",
+    "description": "Deploy model as REST API service",
+    "categories": [
+        "neural network",
+        "images",
+        "videos",
+        "interactive segmentation",
+        "serve"
+    ],
+    "icon": "https://user-images.githubusercontent.com/12828725/259969661-8fff67a8-5a49-467e-8e9b-30082e4cdf16.png",
+    "icon_cover": true,
+    "poster": "https://user-images.githubusercontent.com/115161827/232042280-efa9361c-c122-4ccd-80d6-575a63b4fcf7.png",
+    "need_gpu": false,
+    "gpu": "preferred",
+    "session_tags": [
+        "sly_smart_annotation",
+        "deployed_nn_object_segmentation"
+    ],
+    "community_agent": false,
+    "docker_image": "supervisely/segment-anything:1.0.9",
+    "instance_version": "6.15.35",
+    "entrypoint": "python -m uvicorn src.main:m.app --app-dir ./serve --host 0.0.0.0 --port 8000 --ws websockets",
+    "port": 8000,
+    "task_location": "application_sessions",
+    "license": {
+        "type": "Apache-2.0"
+    },
+    "modal_template_state": {
+        "autostart": true
+    },
+    "access_restriction": [
+        {
+            "instance": "community_free",
+            "message": "The best interactive models for AI-assisted segmentation are already deployed in the Supervisely Cloud and are available for auto-labeling to all platform users. The number of API calls and the ability to run this app on your own agent (GPU) are limited for Free accounts. To increase usage limits or run the app on your GPU, switch to the <a href=\"/billing\">Pro</a> plan or request the <a href=\"https://supervisely.com/contact-us/\" target=\"_blank\">Enterprise</a> Edition."
+        }
+    ]
 }
